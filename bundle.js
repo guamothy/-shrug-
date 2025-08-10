@@ -18528,30 +18528,33 @@
 		};
 	}
 
-	function instance$7($$self, $$props, $$invalidate) {
-		let rapidfireEnabled = true;
-		let rapidfireInterval;
-		let { message } = $$props;
-		let { hotkeyId } = $$props;
+	function onClick() {
+  if (rapidfireEnabled) {
+    rapidfireInterval = setInterval(() => {
+      try {
+        const unsafeWindow = getUnsafeWindow();
+        const phaser = unsafeWindow?.stores?.phaser;
+        if (!phaser) return;
 
-		function onClick() {
-			if (rapidfireEnabled) {
-				// set the interval to fire when the mouse is down
-				rapidfireInterval = setInterval(
-					() => {
-						let mousePointer = getUnsafeWindow().stores.phaser.scene.input.mousePointer;
-						let body = getUnsafeWindow().stores.phaser.mainCharacter.body;
-						if (!mousePointer || !body || !mousePointer.isDown) return;
+        const mousePointer = phaser?.scene?.input?.mousePointer;
+        const body = phaser?.mainCharacter?.body;
+        if (!mousePointer || !body || !mousePointer.isDown) return;
 
-						// calculate the angle and mine
-						let Vector2 = getUnsafeWindow().Phaser.Math.Vector2;
+        const Vector2 = unsafeWindow.Phaser?.Math?.Vector2;
+        if (!Vector2) return;
 
-						let vector = new Vector2(mousePointer.worldX - body.x, mousePointer.worldY - (body.y - 3)).normalize();
-						let angle = getUnsafeWindow().Phaser.Math.Angle.Between(0, 0, vector.x, vector.y);
-						socketManager.sendMessage("FIRE", { angle, x: body.x, y: body.y });
-					},
-					50
-				);
+        const vector = new Vector2(mousePointer.worldX - body.x, mousePointer.worldY - (body.y - 3)).normalize();
+        const angle = unsafeWindow.Phaser.Math.Angle.Between(0, 0, vector.x, vector.y);
+
+        socketManager.sendMessage("FIRE", { angle, x: body.x, y: body.y });
+      } catch (err) {
+        console.error("Rapidfire error:", err);
+      }
+    }, 50);
+  } else {
+    clearInterval(rapidfireInterval);
+  }
+}
 			} else {
 				clearInterval(rapidfireInterval);
 			}
